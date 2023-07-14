@@ -60,7 +60,7 @@ def main():
 
             available_shift_info.append(f"{location} {date.strftime('%d/%m')} | {start_time} - {end_time}")
 
-        print(*available_shift_info, datetime.today(), '-' * 32, sep='\n')
+        print(*available_shift_info, datetime.today(), '-' * 32, sep='\n', flush=True)
         pushover.notify('\n'.join(available_shift_info), title="Shifts available")
 
 

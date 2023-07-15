@@ -35,9 +35,9 @@ def main():
         shifts = planday.fetch_shifts(to_date=datetime.today() + timedelta(weeks=6))
 
         if shifts is None:
-            pushover.notify("The current Planday API token has expired. Initiating automatic replacement.")
+            # pushover.notify("The current Planday API token has expired. Initiating automatic replacement.")
             planday.platform_access_token = planday_oath_2.fetch_new_platform_access_token()
-            pushover.notify("The Planday API token has been updated successfully.")
+            # pushover.notify("The Planday API token has been updated successfully.")
             continue
 
         shift_ids = {shift["id"] for shift in shifts}

@@ -20,7 +20,7 @@ def main():
         os.getenv("PUSHOVER_TOKEN_APP"),
         os.getenv("PUSHOVER_TOKEN_USER")
     )
-    planday_oath_2 = PlandayOAuth2(
+    planday_oauth_2 = PlandayOAuth2(
         "b116846e-8ff0-42dc-83b6-5392543ca73c",
         "loviseberg.planday.com",
 
@@ -28,7 +28,7 @@ def main():
         os.getenv("PLANDAY_PASSWORD")
     )
     planday = Planday(
-        planday_oath_2.fetch_new_platform_access_token(),
+        planday_oauth_2.fetch_new_platform_access_token(),
         "https://scheduling-shift-api.prod-westeurope.planday.cloud",
         "/schedules/128422/shifts"
     )
@@ -39,7 +39,7 @@ def main():
 
         shifts = planday.fetch_shifts(to_date=datetime.today() + timedelta(weeks=6))
         if shifts is None:
-            planday.platform_access_token = planday_oath_2.fetch_new_platform_access_token()
+            planday.platform_access_token = planday_oauth_2.fetch_new_platform_access_token()
             continue
 
         available_shifts = set(filter(lambda shift: shift.status == "Open", shifts))

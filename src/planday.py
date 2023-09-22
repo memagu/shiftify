@@ -1,5 +1,9 @@
-from datetime import datetime
+import base64
+from dataclasses import dataclass
+from datetime import datetime, time
+import hashlib
 import json
+import os
 from typing import Optional
 import urllib.parse
 
@@ -7,18 +11,29 @@ from bs4 import BeautifulSoup
 import requests
 
 
+@dataclass(frozen=True)
+class Shift:
+    location: str
+    date: datetime
+    start_time: time
+    end_time: time
+    status: str
+
+
 class PlandayOAuth2:
     URL_ROOT = "https://id.planday.com"
-    CODE_VERIFIER = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    CODE_CHALLENGE = "DwBzhbb51LfusnSGBa_hqYSgo7-j8BTQnip4TOnlzRo"
+    CODE_VERIFIER_SIZE = 64
 
     def __init__(self, client_id: str, portal_alias: str, username: str, password: str):
         self.client_id = client_id
         self.portal_alias = portal_alias
         self.username = username
         self.password = password
+        self.code_verifier = base64.urlsafe_b64encode(os.urandom(self.CODE_VERIFIER_SIZE)).rstrip(b'=').decode("utf-8")
+        self.code_challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(self.code_verifier.encode('utf-8')).digest()).rstrip(b'=').decode('utf-8')
         self.redirect_uri = f"https://{portal_alias}/auth-callback"
-        self.return_url_path = f"/connect/authorize/callback?client_id={client_id}&redirect_uri={self.redirect_uri}&response_type=code&scope=openid impersonate plandayid&code_challenge={self.CODE_CHALLENGE}&code_challenge_method=S256&acr_values=tenant:{portal_alias}&response_mode=query"
+        self.return_url_path = f"/connect/authorize/callback?client_id={client_id}&redirect_uri={self.redirect_uri}&response_type=code&scope=openid impersonate plandayid&code_challenge={self.code_challenge}&code_challenge_method=S256&acr_values=tenant:{portal_alias}&response_mode=query"
         self.login_url_path = f"/Login?ReturnUrl={urllib.parse.quote(self.return_url_path)}"
 
     def fetch_request_verification_key(self, session: requests.Session) -> str:
@@ -31,9 +46,6 @@ class PlandayOAuth2:
         data = {
             "Username": username,
             "Password": password,
-            "ReturnUrl": self.return_url_path,
-            "TenantSpecified": True,
-            "PortalAlias": self.portal_alias,
             "LoginStep": "PasswordValidation",
             "__RequestVerificationToken": request_verification_token
         }
@@ -47,7 +59,7 @@ class PlandayOAuth2:
             "client_id": self.client_id,
             "code": authorization_code,
             "redirect_uri": self.redirect_uri,
-            "code_verifier": self.CODE_VERIFIER,
+            "code_verifier": self.code_verifier,
             "grant_type": "authorization_code"
         }
 
@@ -71,7 +83,7 @@ class Planday:
         self.api_url_base = api_url_base
         self.api_url_path_shifts = api_url_path_shifts
 
-    def fetch_shifts(self, from_date: datetime = None, to_date: datetime = None) -> Optional[list[dict]]:
+    def fetch_shifts(self, from_date: datetime = None, to_date: datetime = None) -> Optional[list[Shift]]:
         from_date = from_date or datetime.today()
         to_date = to_date or (datetime.today() if datetime.today() >= from_date else from_date)
 
@@ -88,4 +100,14 @@ class Planday:
         if response.status_code != 200:
             return
 
-        return json.loads(response.content.decode("utf-8"))["shifts"]
+        shifts = []
+        for shift in json.loads(response.content.decode("utf-8"))["shifts"]:
+            location = shift["description"].split('\n')[0].strip()
+            date = datetime.strptime(shift["date"], "%Y-%m-%d")
+            start_time = datetime.strptime(shift["start_time"], "%H:%M")
+            end_time = datetime.strptime(shift["end_time"], "%H:%M")
+            status = shift["shift_status"]
+
+            shifts.append(Shift(location, date, start_time, end_time, status))
+
+        return shifts

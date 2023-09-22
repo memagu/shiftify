@@ -46,17 +46,13 @@ def main():
         if available_shifts == recent_shifts:
             continue
 
-        added_shifts = available_shifts.difference(recent_shifts)
-        unchanged_shifts = available_shifts.intersection(recent_shifts)
-        removed_shifts = recent_shifts.difference(available_shifts)
+        shift_groups = (
+            (SHIFT_ADDED, available_shifts.difference(recent_shifts)),
+            (SHIFT_UNCHANGED, available_shifts.intersection(recent_shifts)),
+            (SHIFT_REMOVED, recent_shifts.difference(available_shifts))
+        )
 
         recent_shifts = available_shifts
-
-        shift_groups = (
-            (SHIFT_ADDED, added_shifts),
-            (SHIFT_UNCHANGED, unchanged_shifts),
-            (SHIFT_REMOVED, removed_shifts)
-        )
 
         shift_information = []
         for symbol, shift_group in shift_groups:

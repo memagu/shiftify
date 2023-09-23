@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from pushover import Pushover
 from planday import Planday, PlandayOAuth2
 
-POLL_INTERVAL_SECONDS = 1
+POLL_INTERVAL_SECONDS = 30
 SHIFT_ADDED = '✅'
 SHIFT_UNCHANGED = '😑'
 SHIFT_REMOVED = '❌'

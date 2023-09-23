@@ -8,9 +8,9 @@ from pushover import Pushover
 from planday import Planday, PlandayOAuth2
 
 POLL_INTERVAL_SECONDS = 1
-SHIFT_ADDED = '+'
-SHIFT_UNCHANGED = '⟳'
-SHIFT_REMOVED = '–'
+SHIFT_ADDED = '✅'
+SHIFT_UNCHANGED = '😑'
+SHIFT_REMOVED = '❌'
 
 
 def main():

@@ -56,7 +56,7 @@ def main():
 
         shift_information = []
         for symbol, shift_group in shift_groups:
-            for shift in shift_group:
+            for shift in sorted(shift_group, key=lambda shift: shift.date):
                 shift_information.append(
                     f"[{symbol}] {shift.location} {shift.date:%d/%m %A} | {shift.start_time:%H:%M} - {shift.end_time:%H:%M}"
                 )

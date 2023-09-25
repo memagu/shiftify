@@ -58,7 +58,7 @@ def main():
         for symbol, shift_group in shift_groups:
             for shift in shift_group:
                 shift_information.append(
-                    f"[{symbol}] {shift.location} {shift.date:%d/%m} | {shift.start_time:%H:%M} - {shift.end_time:%H:%M}"
+                    f"[{symbol}] {shift.location} {shift.date:%d/%m %A} | {shift.start_time:%H:%M} - {shift.end_time:%H:%M}"
                 )
 
         print(*shift_information, datetime.today(), '-' * 32, sep='\n', flush=True)
